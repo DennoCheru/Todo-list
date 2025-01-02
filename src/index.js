@@ -1,17 +1,34 @@
+import './style.css';
 import { Todo } from './todo.js';
 import { projectManager } from './projectManager.js';
+import { renderProjects, renderTodos } from './render.js';
+import { openTodoModal, closeTodoModal, toggleComplete, changePriority, changeDueDate, filterTodos, sortByPriority, sortByDueDate, openProjectModal, closeProjectModal } from './dom.js';
 
-console.log('Default Project: ', projectManager.defaultProject);
+document.addEventListener('DOMContentLoaded', () => {
+    renderProjects();
+    renderTodos();
+});
 
-const personalProject = projectManager.addProject('Personal');;
-const workProject = projectManager.addProject('Work');
+document.getElementById('filter-all').addEventListener('click', () => filterTodos('all'));
+document.getElementById('filter-active').addEventListener('click', () => filterTodos('active'));
+document.getElementById('filter-complete').addEventListener('click', () => filterTodos('completed'));
 
-const todo1 = new Todo('Buy groceries', 'Buy milk, eggs, and bread', '2021-07-01', 'High');
-projectManager.defaultProject.addTodo(todo1);
+document.getElementById('sort-priority').addEventListener('click', sortByPriority);
+document.getElementById('sort-due-date').addEventListener('click', sortByDueDate);
 
-const todo2 = new Todo('Finish project', 'Finish the project by the deadline', '2021-07-15', 'Medium');
-workProject.addTodo(todo2);
-
-console.log("All projects: ", projectManager.getProjects());
-
-console.log("Todo's in work project: ", workProject.getTodos());
+export {
+    projectManager,
+    renderProjects,
+    renderTodos,
+    Todo,
+    openTodoModal,
+    closeTodoModal,
+    toggleComplete,
+    changePriority,
+    changeDueDate,
+    filterTodos,
+    sortByPriority,
+    sortByDueDate,
+    openProjectModal,
+    closeProjectModal
+};
