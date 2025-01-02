@@ -1,3 +1,5 @@
+import { Todo } from './todo.js';
+
 class Project {
     constructor(name) {
         this.name = name;
@@ -18,11 +20,32 @@ class Project {
         return this.todos;
     }
 
+    toggleComplete(index) {
+        const todo = this.todos[index];
+        if (todo) {
+            todo.toggleComplete();
+        }
+    }
+
+    changePriority(index, newPriority) {
+        const todo = this.todos[index];
+        if (todo) {
+            todo.updatePriority(newPriority);
+        }
+    }
+
+    changeDueDate(index, newDueDate) {
+        const todo = this.todos[index];
+        if (todo) {
+            todo.updateDueDate(newDueDate);
+        }
+    }
+
     sortByPriority() {
         const priorityOrder = {
-            'Low': 1,
-            'Medium': 2,
-            'High': 3
+            'low': 3,
+            'medium': 2,
+            'high': 1
         };
         this.todos.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
     }
@@ -31,8 +54,14 @@ class Project {
         this.todos.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
     }
 
-    filterByStatus(completed = true) {
-        return this.todos.filter(todo => todo.completed === completed);
+    filterByStatus(status) {
+        if (status === 'active') {
+            return this.todos.filter(todo => !todo.completed);
+        } else if (status === 'completed') {
+            return this.todos.filter(todo => todo.completed);
+        } else {
+            return this.todos;
+        }
     }
 }
 
