@@ -17,6 +17,23 @@ class Project {
     getTodos() {
         return this.todos;
     }
+
+    sortByPriority() {
+        const priorityOrder = {
+            'Low': 1,
+            'Medium': 2,
+            'High': 3
+        };
+        this.todos.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+    }
+
+    sortByDueDate() {
+        this.todos.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    }
+
+    filterByStatus(completed = true) {
+        return this.todos.filter(todo => todo.completed === completed);
+    }
 }
 
 export { Project };
