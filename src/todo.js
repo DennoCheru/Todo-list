@@ -8,17 +8,17 @@ class Todo {
         this.checklist = checklist;
         this.completed = false;
     }
-
-    markComplete() {
-        this.completed = true;
-    }
-
+    
     updatePriority(newPriority) {
         this.priority = newPriority;
     }
 
     updateDueDate(newDueDate) {
         this.dueDate = newDueDate;
+    }
+
+    toggleComplete() {
+        this.completed = !this.completed;
     }
 }
 
