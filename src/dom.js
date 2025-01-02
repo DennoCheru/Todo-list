@@ -1,119 +1,140 @@
 import { projectManager } from "./projectManager.js";
+import { renderProjects, renderTodos } from "./render.js";
 import { Todo } from "./todo.js";
 
-const projectList = document.querySelector('#project-list');
-const todoList = document.querySelector('#todo-list');
-const addProjectButton = document.querySelector('#add-project');
-const addTodoButton = document.querySelector('#add-todo');
-const todoModal = document.querySelector('#todo-modal');
-const todoModalCloseBtn = document.querySelector('#todo-modal-close');
-const todoModalForm = document.querySelector('#todo-modal-form');
-const projectSelect = document.querySelector('#project-select');
-const titleInput = document.querySelector('#todo-title');
-const descriptionInput = document.querySelector('#todo-description');
-const dueDateInput = document.querySelector('#todo-due-date');
-const priorityInput = document.querySelector('#todo-priority');
-
-function renderProjects() {
-    projectList.innerHTML = "";
-    projectManager.getProjects().forEach((project) => {
-        const projectItem = document.createElement('li');
-        projectItem.textContent = project.name;
-        projectItem.addEventListener('click', () => renderTodos(project));
-        projectList.appendChild(projectItem);
-    });
+export function openTodoModal() {
+    const modal = document.getElementById('todo-modal');
+    modal.style.display = 'block';
 }
 
-function renderTodos(project) {
-    todoList.innerHTML = "";
-    project.getTodos().forEach((todo, index) => {
-        const todoItem = document.createElement('li');
-        todoItem.classList.add('todo-item');
-
-        const title = document.createElement('h3');
-        title.textContent = todo.title;
-
-        const description = document.createElement('p');
-        description.textContent = todo.description;
-
-        const dueDate = document.createElement('p');
-        dueDate.textContent = `Due Date: ${todo.dueDate}`;
-
-        const priority = document.createElement('p');
-        priority.textContent = `Priority: ${todo.priority}`;
-
-        const notes = document.createElement('p');
-        notes.textContent = `Notes: ${todo.notes}`;
-
-        const checklist = document.createElement('ul');
-        todo.checklist.forEach((item) => {
-            const listItem = document.createElement('li');
-            listItem.textContent = item;
-            checklist.appendChild(listItem);
-        });
-
-        const completeButton = document.createElement('button');
-        completeButton.textContent = todo.completed ? 'Completed' : 'Mark as Complete';
-        completeButton.addEventListener('click', () => {
-            todo.markComplete();
-            renderTodos(project);
-        });
-
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.addEventListener('click', () => {
-            project.removeTodo(index);
-            renderTodos(project);
-        });
-
-        todoItem.append(title, description, dueDate, priority, notes, checklist, completeButton, deleteButton);
-        todoList.appendChild(todoItem);
-    });
-
-    addProjectButton.addEventListener('click', () => {
-        const projectName = prompt("Enter project name:");
-        if (projectName) {
-            projectManager.addProject(projectName);
-            renderProjects();
-            renderTodos(project);
-        }
-    });
-
-    addTodoButton.addEventListener('click', () => {
-        projectSelect.innerHTML = "";
-        projectManager.getProjects().forEach((project) => {
-            const option = document.createElement('option');
-            option.value = project.name;
-            option.textContent = project.name;
-            projectSelect.appendChild(option);
-        });
-
-        todoModal.style.display = 'block';
-    });
-
-    todoModalCloseBtn.addEventListener('click', () => {
-        todoModal.style.display = 'none';
-    });
-
-    todoModalForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const projectName = projectSelect.value;
-        const project = projectManager.findProject(projectName);
-        const title = titleInput.value;
-        const description = descriptionInput.value;
-        const dueDate = dueDateInput.value;
-        const priority = priorityInput.value;
-
-        if (selectedProject && title && description && dueDate && priority) {
-            const newTodo = new Todo(title, description, dueDate, priority);
-            selectedProject.addTodo(newTodo);
-            renderTodos(selectedProject);
-
-            todoModal.style.display = 'none';
-            todoModalForm.reset();
-        }
-    });
+export function closeTodoModal() {
+    const modal = document.getElementById('todo-modal');
+    modal.style.display = 'none';
 }
+
+export function openProjectModal() {
+    const modal = document.getElementById('project-modal');
+    modal.style.display = 'block';
+}
+
+export function closeProjectModal() {
+    const modal = document.getElementById('project-modal');
+    modal.style.display = 'none';
+}
+
+export function openEditTodoModal(todo, index) {
+    document.getElementById('todo-title').value = todo.title;
+    document.getElementById('todo-description').value = todo.description;
+    document.getElementById('todo-due-date').value = todo.dueDate;
+    document.getElementById('todo-priority').value = todo.priority;
+    document.getElementById('todo-notes').value = todo.notes;
+    document.getElementById('todo-checklist').value = todo.checklist.join('\n');
+
+    document.getElementById('todo-modal').setAttribute('data-edit-index', index);
+
+    openTodoModal();
+}
+
+function clearTodoModal() {
+    document.getElementById('todo-title').value = '';
+    document.getElementById('todo-description').value = '';
+    document.getElementById('todo-due-date').value = '';
+    document.getElementById('todo-priority').value = '';
+    document.getElementById('todo-notes').value = '';
+    document.getElementById('todo-checklist').value = '';
+    document.getElementById('todo-modal').removeAttribute('data-edit-index');
+}
+
+
+document.getElementById('add-todo').addEventListener('click', openTodoModal);
+
+document.getElementById('todo-modal-close').addEventListener('click', closeTodoModal);
+
+document.getElementById('save-todo').addEventListener('click', () => {
+    const title = document.getElementById('todo-title').value;
+    const description = document.getElementById('todo-description').value;
+    const dueDate = document.getElementById('todo-due-date').value;
+    const priority = document.getElementById('todo-priority').value;
+    const notes = document.getElementById('todo-notes').value;
+    const checklist = document.getElementById('todo-checklist').value.split('\n');
+
+    const index = document.getElementById('todo-modal').getAttribute('data-edit-index');
+
+    const currentProject = projectManager.getCurrentProject();
+
+    if (index === null) {
+        const newTodo = new Todo(title, description, dueDate, priority, notes, checklist);
+        projectManager.addTodoToCurrentProject(newTodo)
+    } else {
+        const todoToEdit = currentProject.todos[index];
+        todoToEdit.title = title;
+        todoToEdit.description = description;
+        todoToEdit.dueDate = dueDate;
+        todoToEdit.priority = priority;
+        todoToEdit.notes = notes;
+        todoToEdit.checklist = checklist;
+    }
+    renderTodos();
+    closeTodoModal();
+    clearTodoModal();
+});
+
+document.getElementById('add-project').addEventListener('click', openProjectModal);
+
+document.getElementById('project-modal-close').addEventListener('click', closeProjectModal);
+
+document.getElementById('save-project').addEventListener('click', () => {
+    const projectName = document.getElementById('project-name').value;
+    if (projectName) {
+        projectManager.addProject(projectName);
+        renderProjects();
+        closeProjectModal();
+    } else {
+        alert('Project name cannot be empty');
+    }
+});
 
 renderProjects();
-renderTodos(projectManager.defaultProject);
+renderTodos();
+
+function updateAndRenderTodos(updateFunction) {
+    const currentProject = projectManager.getCurrentProject();
+    updateFunction(currentProject);
+    renderTodos();
+}
+
+export function toggleComplete(index) {
+    updateAndRenderTodos(currentProject => {
+        currentProject.toggleComplete(index);
+    });
+}
+
+export function changePriority(index, newPriority) {
+    updateAndRenderTodos(currentProject => {
+        currentProject.changePriority(index, newPriority);
+    });
+}
+
+export function changeDueDate(index, newDueDate) {
+    updateAndRenderTodos(currentProject => {
+        currentProject.changeDueDate(index, newDueDate);
+    });
+}
+
+export function filterTodos(status) {
+    const currentProject = projectManager.getCurrentProject();
+    const filteredTodos = currentProject.filterByStatus(status);
+    renderTodos(filteredTodos);
+}
+
+export function sortByPriority() {
+    const currentProject = projectManager.getCurrentProject();
+    currentProject.sortByPriority();
+    renderTodos();
+}
+
+export function sortByDueDate() {
+    const currentProject = projectManager.getCurrentProject();
+    currentProject.sortByDueDate();
+    renderTodos();
+}
